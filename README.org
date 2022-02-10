@@ -1,0 +1,4 @@
+#+TITLE: Readme
+#+AUTHOR: Felix Schlepper
+
+* Write yourself a Git (in C)!
