@@ -1,13 +1,16 @@
 #pragma once
 
 #include <boost/program_options.hpp>
+#include <filesystem>
 #include <iostream>
 
+#include "repo.hpp"
 #include "util.hpp"
 
 namespace libwyag::cli {
 namespace po = boost::program_options;
 using namespace std;
+namespace fs = std::filesystem;
 
 class Cli {
  public:
@@ -20,7 +23,7 @@ class Cli {
         ("cat-file,cat", "description")
         ("checkout,co", "checkout")
         ("commit", "commit staging area to ...")
-        ("init", "initialize a wyag repository")
+        ("init", po::value<fs::path>()->default_value("."), "initialize a wyag repository")
         ;
     // clang-format on
 
@@ -38,6 +41,11 @@ class Cli {
     // Help message
     if (vm_.count("help")) {
       print_help();
+    }
+
+    // init
+    if (vm_.count("init")) {
+      repo::repo_create(vm_["init"].as<fs::path>());
     }
   }
 
