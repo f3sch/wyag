@@ -1,0 +1,9 @@
+{
+  "name": "wyag",
+  "version-string": "0.1",
+  "dependencies": [
+    "gtest",
+    "boost-program-options",
+    "cryptopp"
+  ]
+}
