@@ -8,3 +8,7 @@ There are a couple of goals I have in mind for this learning project, mainly:
 - write passable documentation
 - proper error handling
 - minimal dependencies (cryptopp, boost.program_options)
+
+** Progress
+*** TODO
+[[https://wyag.thb.lt/#cmd-init][here]]
