@@ -12,12 +12,27 @@ using namespace std;
 
 struct configuration {
   unsigned int version;
+  bool filemode;
+  bool bare;
+
+  configuration() : version(0), filemode(false), bare(false) {}
+  auto write(const fs::path& path) {
+    ofstream file;
+    file.open(path);
+    file << "[core]" << endl;
+    file << "version = " << version << endl;
+    file << "filemode = " << filemode << endl;
+    file << "bare = " << bare << endl;
+    file.close();
+  }
 
   friend ostream& operator<<(ostream& os, const configuration& cfg);
 };
 
 inline ostream& operator<<(ostream& os, const configuration& cfg) {
   os << "\tVersion: " << cfg.version << endl;
+  os << "\tFilemode: " << cfg.version << endl;
+  os << "\tBare: " << cfg.version << endl;
   return os;
 }
 
@@ -27,7 +42,9 @@ class Config {
     // list of config values
     // clang-format off
     desc_.add_options()
-        ("general.version", po::value(&cfg_.version)->required(), "Version of the repository")
+        ("core.version", po::value(&cfg_.version)->required(), "Version of the repository")
+        ("core.filemode", po::value(&cfg_.version)->required(), "Disable tracking of file mode changes in the worktree")
+        ("core.bare", po::value(&cfg_.version)->required(), "Has a worktree.")
         ;
     // clang-format on
   }
@@ -65,4 +82,5 @@ class Config {
 
   void print_help() { cerr << desc_ << endl; }
 };
+
 }  // namespace libwyag::config
