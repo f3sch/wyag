@@ -1,10 +1,10 @@
-#include <variant>
+#include <filesystem>
 
 #include "cli.hpp"
 #include "gtest/gtest.h"
 
 namespace libwyag::tests {
-namespace po = boost::program_options;
+namespace fs = std::filesystem;
 using namespace cli;
 using namespace std;
 
@@ -13,10 +13,10 @@ TEST(cli, noCommand) {
   const char *argv[argc] = {"0", "nocommand"};
   Cli cli(argc, argv);
 
-  EXPECT_THROW(cli.parse(), po::invalid_option_value);
+  EXPECT_ANY_THROW(cli.parse());
 }
 
-TEST(cli, init) {
+TEST(cli, init_set_path) {
   const int argc = 4;
   const char *argv[argc] = {"0", "init", "--path", "here"};
   Cli cli(argc, argv);
