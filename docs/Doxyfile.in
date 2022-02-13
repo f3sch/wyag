@@ -1,0 +1,3 @@
+INPUT                  = "@DOXYGEN_IN_DIR@"
+PROJECT_NAME = "@PROJECT_NAME@"
+PROJECT_BRIEF = "Write yourself a Git!"

@@ -5,9 +5,9 @@
 This is an implementation of the [[https://wyag.thb.lt/]["Write yourself a Git!"]] guide in C++20.
 There are a couple of goals I have in mind for this learning project, mainly:
 - use C++20 features (no modules, CMake does not support it yet...)
-- write passable documentation
+- write passable documentation (doxygen)
 - proper error handling
-- minimal dependencies (cryptopp, boost.program_options)
+- minimal dependencies (cryptopp, boost.program_options, doxygen)
 
 ** Progress
 *** TODO
