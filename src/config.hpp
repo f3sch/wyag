@@ -16,9 +16,9 @@ namespace internal {
  * Container for available config options.
  */
 struct Configuration {
-  unsigned int version; /* Version number. */
-  bool filemode;        /* filemode */
-  bool bare;            /* bare init */
+  unsigned int version;  //!< Version number.
+  bool filemode;         //!< filemode.
+  bool bare;             //!< bare init.
 
  public:
   Configuration();

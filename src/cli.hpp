@@ -13,7 +13,7 @@ using namespace std;
  * Represent the init command and its optionals.
  */
 struct Init {
-  fs::path path_; /* Where to initialize repository. */
+  fs::path path_;  //!< Where to initialize repository.
 };
 
 /**
