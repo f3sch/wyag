@@ -2,6 +2,6 @@
 
 namespace libwyag {
 
-int entry(int argc, char *argv[]);
+int entry(const int argc, const char *argv[]);
 
 }

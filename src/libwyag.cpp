@@ -5,30 +5,42 @@
 #include <boost/program_options.hpp>
 #include <filesystem>
 #include <iostream>
+#include <variant>
 
 #include "cli.hpp"
 #include "repo.hpp"
 #include "util.hpp"
 
 namespace libwyag {
+namespace detail {
+using namespace std;
+using namespace cli;
+using namespace repo;
 
-struct Interface {
-  cli::Cli cli;
-  repo::GitRepository repo;
-
-  Interface(int argc, char* argv[])
-      : cli(argc, argv), repo(std::filesystem::current_path()) {
-    // get the command line options
-    cli.parse();
-
-    // print information
-    repo.print_info();
+void on_cmd(const Command& cmd, GitRepository& repo) {
+  if (holds_alternative<Init>(cmd)) {
+    // create a repo
+    auto init = get<Init>(cmd);
+    repo.repo_create(init.path_);
+  } else {
+    cerr << "Unhandled command! (Write better code)" << endl;
+    throw runtime_error("Undhandled command");
   }
-};
+}
+}  // namespace detail
 
-int entry(int argc, char* argv[]) {
-  // get repo info
-  Interface iface(argc, argv);
+int entry(const int argc, const char* argv[]) {
+  using namespace cli;
+  using namespace repo;
+  // parse cmd line
+  Cli cli{argc, argv};
+  auto cmd = cli.parse();
+
+  // get repo
+  GitRepository repo;
+
+  // react to command
+  detail::on_cmd(cmd, repo);
 
   return SUCCESS;
 };

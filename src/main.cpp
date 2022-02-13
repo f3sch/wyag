@@ -4,4 +4,6 @@
 
 using namespace std;
 
-int main(int argc, char *argv[]) { return libwyag::entry(argc, argv); }
+int main(const int argc, const char *argv[]) {
+  return libwyag::entry(argc, argv);
+}
