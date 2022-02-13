@@ -1,10 +1,10 @@
 find_package(GTest)
 
 # Custom add_my_test
-function(add_my_test targetName libraryName)
-  add_executable(${targetName} ${ARGN})
+function(add_my_test targetName libraryName fileName)
+  add_executable(${targetName} ${fileName})
   target_link_libraries(${targetName} PRIVATE ${libraryName} GTest::GTest
-                                              GTest::gtest_main)
+                                              GTest::gtest_main ${ARGN})
   target_include_directories(${targetName} PRIVATE ${CMAKE_SOURCE_DIR}/src)
   gtest_add_tests(
     TARGET ${targetName}
@@ -13,3 +13,4 @@ function(add_my_test targetName libraryName)
 endfunction()
 
 add_my_test(cli_utest cli cli_utest.cpp)
+add_my_test(repo_utest repo repo_utest.cpp cli)
