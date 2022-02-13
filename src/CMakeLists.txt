@@ -5,6 +5,8 @@ add_library(config config.cpp)
 target_link_libraries(config PRIVATE Boost::boost Boost::program_options)
 add_library(repo repo.cpp)
 target_link_libraries(repo PRIVATE Boost::boost Boost::program_options config)
+add_library(object object.cpp)
+target_link_libraries(object PRIVATE cryptopp-static repo)
 
 # Library here
 add_library(libwyag libwyag.cpp)
