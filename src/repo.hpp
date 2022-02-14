@@ -1,14 +1,19 @@
 #pragma once
 
+#include <cryptopp/sha.h>
+
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 
 #include "config.hpp"
+#include "object.hpp"
 
 namespace libwyag::repo {
 namespace fs = std::filesystem;
 using namespace config;
+using namespace object;
+using namespace CryptoPP;
 
 /**
  * Represents a wyagit repository.
@@ -89,6 +94,44 @@ class GitRepository {
    * Print information of repository.
    */
   void print_info();
+
+  // object interaction
+  /**
+   * Read an object from a repository.
+   *
+   * @param hash SHA1 hash of object.
+   * @return wyag object.
+   */
+  auto object_read(const string& hash) -> WyagObj;
+
+  /**
+   * Write an object to a repository.
+   *
+   * @param obj wyag object to write.
+   * @param actually_write Perfrom actual write.
+   * @return hash digest of object.
+   */
+  auto object_write(WyagObject& obj, const bool actually_write = true)
+      -> string;
+
+  /**
+   * Find an object in a repository.
+   *
+   * @param name Name of the object.
+   * @param fmt Object type
+   * @param follow UNIMPLEMENTED!
+   * @return Name of wyag object.
+   */
+  auto object_find(const string& name, const string& fmt,
+                   const bool follow = true) -> string;
+
+  /**
+   * Cat an object in the repo.
+   *
+   * @param obj Hash of object.
+   * @param fmt Format of object.
+   */
+  void cat_file(const string& obj, const string& fmt = "");
 
  private:
   fs::path worktree_; /* Path to worktree. */

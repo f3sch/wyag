@@ -14,3 +14,4 @@ endfunction()
 
 add_my_test(cli_utest cli cli_utest.cpp)
 add_my_test(repo_utest repo repo_utest.cpp cli)
+add_my_test(object_utest object object_utest.cpp cryptopp-static)

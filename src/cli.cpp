@@ -49,8 +49,7 @@ Command Cli::parse() {
   string cmd = vm_["command"].as<string>();
   auto parsed = get<po::parsed_options>(parsed_);
 
-  // Initialize a repository
-  if (cmd == "init") {
+  if (cmd == "init") {  // Initialize a repository
     po::options_description init_desc("init options");
     // clang-format off
     init_desc.add_options()
@@ -70,17 +69,37 @@ Command Cli::parse() {
       cerr << init_desc << endl;
     }
 
-    Init init;
-    init.path_ = vm_["path"].as<fs::path>();
-    cout << init.path_ << endl;
+    return Init{.path_ = vm_["path"].as<fs::path>()};
 
-    return init;
   } else if (cmd == "help") {
     print_help();
-    return 0;
+    return monostate();
   } else if (cmd == "status") {
   } else if (cmd == "add") {
-  } else if (cmd == "cat-file") {
+  } else if (cmd == "cat-file") {  // cat-file an onject
+    po::options_description cat_desc("cat-file description");
+    // clang-format off
+    cat_desc.add_options()
+        ("type,t", po::value<string>()->required(), "Type of object to display.")
+        ("object,o", po::value<string>()->required(), "Object to display.")
+        ;
+    // clang-format on
+
+    try {
+      vector<string> opts =
+          po::collect_unrecognized(parsed.options, po::include_positional);
+      opts.erase(opts.begin());
+
+      // reparse
+      po::store(po::command_line_parser(opts).options(cat_desc).run(), vm_);
+    } catch (po::error& e) {
+      cerr << "Error: " << e.what() << endl;
+      cerr << cat_desc << endl;
+    }
+
+    return Cat_file{.type_ = vm_["type"].as<string>(),
+                    .object_ = vm_["object"].as<string>()};
+
   } else if (cmd == "checkout") {
   } else if (cmd == "commit") {
   } else if (cmd == "hash-object") {

@@ -22,6 +22,12 @@ void on_cmd(const Command& cmd, GitRepository& repo) {
     // create a repo
     auto init = get<Init>(cmd);
     repo.repo_create(init.path_);
+  } else if (holds_alternative<Cat_file>(cmd)) {
+    // cat-file
+    auto cat = get<Cat_file>(cmd);
+    repo.read_config();
+
+    repo.cat_file(cat.type_, cat.object_);
   } else {
     cerr << "Unhandled command! (Write better code)" << endl;
     throw runtime_error("Undhandled command");

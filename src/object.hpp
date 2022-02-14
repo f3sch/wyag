@@ -1,16 +1,10 @@
 #pragma once
 
-#include <cryptopp/cryptlib.h>
-#include <cryptopp/sha.h>
+#include <string>
+#include <variant>
 
-#include <any>
-
-#include "repo.hpp"
-
-namespace libwyag::objects {
+namespace libwyag::object {
 using namespace std;
-using namespace repo;
-using namespace CryptoPP;
 
 /**
  * Generic wyagObject.
@@ -20,42 +14,151 @@ class WyagObject {
   /**
    * Only constructor of an object.
    *
-   * @param repo Owning repository.
-   * @param data Data to load.
+   * @param data Data to store.
    */
-  WyagObject(const GitRepository& repo, const any& data) : repo_(repo) {
-    if (data.has_value()) {
-      deserialize(data);
-    }
-  }
+  WyagObject(const string& data = "");
 
   /**
    * Deserialize data.
    *
    * @param data Data to deserialize.
-   * @return Not sure yet!
+   * @return Deserialized data.
    */
-  any deserialize(const any& data);
+  virtual void deserialize(const string& data) = 0;
 
   /**
    * Serialize data.
    *
-   * @param data Data to serialize.
-   * @return Not sure yet!
+   * @return String of serialized data!
    */
-  any serialize(const any& data);
+  virtual auto serialize() -> string const = 0;
+
+  /**
+   * Get format of object.
+   * @return Format
+   */
+  auto get_fmt() -> string const;
 
  private:
-  GitRepository repo_; /* Owning repository. */
+  string fmt = 0; /* format */
 };
 
 /**
- * Read an object from a repository.
- *
- * @param repo Repository to read from.
- * @param sha SHA1 hash of object.
- * @return Not sure yet!
+ * Blob object
  */
-any object_read(const GitRepository& repo, const SHA1& sha);
+class WyagBlob : public WyagObject {
+ public:
+  /**
+   * Only constructor.
+   *
+   * @param data Data to store as blobdata.
+   */
+  WyagBlob(const string& data);
 
-}  // namespace libwyag::objects
+  /**
+   * Deserialize data.
+   *
+   * @param data Data to deserialize.
+   */
+  void deserialize(const string& data) override;
+
+  /**
+   * Serialize data stored in blobdata.
+   */
+  auto serialize() -> string const override;
+
+ private:
+  string blobdata;     /* blobdata */
+  string fmt = "blob"; /* format */
+};
+
+/**
+ * Tree object.
+ */
+class WyagTree : public WyagObject {
+ public:
+  /**
+   * Only constructor.
+   *
+   * @param data
+   */
+  WyagTree(const string& data);
+
+  /**
+   * Deserialize data.
+   *
+   * @param data Data to deserialize.
+   */
+  void deserialize(const string& data) override;
+
+  /**
+   * Serialize data stored in blobdata.
+   */
+  auto serialize() -> string const override;
+
+ private:
+  string fmt = "tree"; /* format */
+};
+
+/**
+ * Tag object.
+ */
+class WyagTag : public WyagObject {
+ public:
+  /**
+   * Only constructor.
+   *
+   * @param data
+   */
+  WyagTag(const string& data);
+
+  /**
+   * Deserialize data.
+   *
+   * @param data Data to deserialize.
+   */
+  void deserialize(const string& data) override;
+
+  /**
+   * Serialize data stored in blobdata.
+   */
+  auto serialize() -> string const override;
+
+ private:
+  string fmt = "tag"; /* format */
+};
+
+/**
+ * Commit object.
+ */
+class WyagCommit : public WyagObject {
+ public:
+  /**
+   * Only constructor.
+   *
+   * @param data
+   */
+  WyagCommit(const string& data);
+
+  /**
+   * Deserialize data.
+   *
+   * @param data Data to deserialize.
+   */
+  void deserialize(const string& data) override;
+
+  /**
+   * Serialize data stored in blobdata.
+   */
+  auto serialize() -> string const override;
+
+ private:
+  string fmt = "commit"; /* format */
+};
+
+/**
+ * Generic return type
+ */
+typedef variant<WyagBlob, WyagCommit, WyagTag, WyagTree> WyagObj;
+
+}  // namespace libwyag::object

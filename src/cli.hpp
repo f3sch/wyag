@@ -17,10 +17,26 @@ struct Init {
 };
 
 /**
- * Wrapper for all positional arguements.
- * @note int is a placeholder, since it is easy to initialize.
+ * Represent the cat-file command and its optionals.
  */
-typedef variant<int, Init> Command;
+struct Cat_file {
+  string type_;    //!< Type to look at.
+  string object_;  //!< Object to inspect.
+};
+
+/**
+ * Represent the hash-object command and its optionals.
+ */
+struct Hash_object {
+  string type_;    //!< Type to look at.
+  string write_;   //!< Actually write the object into the database
+  fs::path path_;  //!< Read object from file
+};
+
+/**
+ * Wrapper for all positional arguements.
+ */
+typedef variant<monostate, Init, Cat_file> Command;
 
 /**
  * Represents the command line interface.
@@ -48,7 +64,7 @@ class Cli {
       "Allowed global options."}; /* Global argument description. */
   po::positional_options_description
       pos_; /* Position arguemnts given via cli. */
-  variant<int, po::parsed_options> parsed_{0}; /* Parsed arguements. */
+  variant<int, po::parsed_options> parsed_; /* Parsed arguements. */
   po::variables_map vm_; /* Storage for arguements after parsing. */
 
   /**

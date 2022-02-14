@@ -1,15 +1,24 @@
 #include "repo.hpp"
 
+#include <cryptopp/cryptlib.h>
+#include <cryptopp/files.h>
+#include <cryptopp/zlib.h>
+#include <fmt/format.h>
+
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 
 #include "config.hpp"
+#include "object.hpp"
 
 namespace libwyag::repo {
 namespace fs = std::filesystem;
 using namespace config;
 using namespace std;
+using namespace object;
+using namespace CryptoPP;
+using namespace fmt;
 
 GitRepository::GitRepository(const fs::path path, const bool force)
     : worktree_(path),
@@ -26,18 +35,18 @@ auto GitRepository::repo_create(const fs::path& path) -> GitRepository {
   // make sure path does not exists or is an empty directory
   if (fs::exists(wktree)) {
     if (not fs::is_directory(wktree)) {
-      auto msg = " is not a directory!";
-      throw runtime_error(wktree.string() + msg);
+      throw runtime_error(format("{} is not a directory!", wktree.string()));
     }
     if (not fs::is_empty(wktree)) {
-      auto msg = " is not an empty directory!";
-      throw runtime_error(wktree.string() + msg);
+      throw runtime_error(
+          format("{} is not an empty directory!", wktree.string()));
     }
     // check if other paths contain .wyagit directory
     auto rpath = repo_find(wktree, false);
     if (not rpath.empty()) {
-      auto msg = "Found a .wyagit repository in upwards recusrion in: ";
-      throw runtime_error(msg + rpath.string());
+      throw runtime_error(
+          format("Found a .wyagit repository in upwards recusrion in: ",
+                 rpath.string()));
     }
   } else {
     // create if it does not exist
@@ -71,6 +80,7 @@ auto GitRepository::repo_create(const fs::path& path) -> GitRepository {
 auto GitRepository::repo_path(const fs::path& path) noexcept -> fs::path {
   return gitdir_ / path;
 }
+
 auto GitRepository::repo_dir(const fs::path& path, bool mkdir) -> fs::path {
   auto rpath = repo_path(path);
 
@@ -78,8 +88,7 @@ auto GitRepository::repo_dir(const fs::path& path, bool mkdir) -> fs::path {
     if (fs::is_directory(rpath)) {
       return rpath;
     } else {
-      auto msg = "Not a directory: ";
-      throw std::runtime_error(msg + rpath.string());
+      throw runtime_error(format("Not a directory: ", rpath.string()));
     }
   }
 
@@ -90,6 +99,7 @@ auto GitRepository::repo_dir(const fs::path& path, bool mkdir) -> fs::path {
     return fs::path();
   }
 }
+
 auto GitRepository::repo_file(const fs::path& path, bool mkdir) -> fs::path {
   if (repo_dir(path.parent_path(), mkdir).empty()) {
     return repo_path(path);
@@ -115,6 +125,87 @@ void GitRepository::print_info() {
   cout << "Config: " << conf_ << endl;
   cout << "Repo Info:" << endl;
   config_.print_info();
+}
+
+auto GitRepository::object_read(const string& hash) -> WyagObj {
+  auto path =
+      this->repo_file(fs::path("objects") / fs::path(hash.substr(0, 2)) /
+                      fs::path(hash.substr(2)));
+
+  // inflate data from file
+  string raw;
+  FileSource fs(path.c_str(), true, new Inflator(new StringSink(raw)));
+
+  // read object type
+  auto x = raw.find(' ');
+  auto fmt = raw.substr(0, x);
+
+  // read and validate object size
+  auto y = raw.find('\x00', x);
+  auto size = static_cast<size_t>(stoi(raw.substr(x, y)));
+  if (size != raw.length() - y - 1) {
+    throw runtime_error(format("Malformed object: bad length -> ", hash));
+  }
+
+  // Pick Constructor
+  if (fmt == "commit") {
+    return WyagCommit(raw.substr(y + 1));
+  } else if (fmt == "tree") {
+    return WyagTree(raw.substr(y + 1));
+  } else if (fmt == "tag") {
+    return WyagTag(raw.substr(y + 1));
+  } else if (fmt == "blob") {
+    return WyagBlob(raw.substr(y + 1));
+  }
+
+  throw runtime_error("Unkown type " + fmt + " for object " + hash);
+}
+
+auto GitRepository::object_write(WyagObject& obj, const bool actually_write)
+    -> string {
+  // serialize data
+  auto data = obj.serialize();
+  // add header
+  string result = format("{} {} \x00 {}", obj.get_fmt(), data.length(), data);
+  // compute hash
+  SHA1 hash;
+  string digest;
+  StringSource ss(result, true, new HashFilter(hash, new StringSink(digest)));
+
+  if (actually_write) {
+    // compute path
+    auto path =
+        this->repo_file(fs::path("objects") / fs::path(digest.substr(0, 2)) /
+                        fs::path(digest.substr(2)));
+
+    // deflate
+    StringSource ss(result, true,
+                    new Deflator(new FileSink(path.c_str(), true)));
+  }
+
+  return digest;
+}
+
+auto GitRepository::object_find(const string& name, const string& fmt,
+                                const bool follow) -> string {
+  return name;
+}
+
+void GitRepository::cat_file(const string& obj, const string& fmt) {
+  auto obj_ = object_read(object_find(obj, fmt));
+
+  if (holds_alternative<WyagBlob>(obj_)) {
+    cout << get<WyagBlob>(obj_).serialize() << endl;
+  } else if (holds_alternative<WyagCommit>(obj_)) {
+    cout << get<WyagCommit>(obj_).serialize() << endl;
+  } else if (holds_alternative<WyagTag>(obj_)) {
+    cout << get<WyagTag>(obj_).serialize() << endl;
+  } else if (holds_alternative<WyagTree>(obj_)) {
+    cout << get<WyagTree>(obj_).serialize() << endl;
+  }
+
+  throw runtime_error(
+      format("Unhandled variant ({}) in cat-file command!", fmt));
 }
 
 auto repo_find(const fs::path& path, bool required) -> fs::path {
