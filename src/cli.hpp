@@ -28,15 +28,15 @@ struct Cat_file {
  * Represent the hash-object command and its optionals.
  */
 struct Hash_object {
+  bool write_;     //!< Actually write the object into the database
   string type_;    //!< Type to look at.
-  string write_;   //!< Actually write the object into the database
   fs::path path_;  //!< Read object from file
 };
 
 /**
  * Wrapper for all positional arguements.
  */
-typedef variant<monostate, Init, Cat_file> Command;
+typedef variant<monostate, Init, Cat_file, Hash_object> Command;
 
 /**
  * Represents the command line interface.

@@ -100,17 +100,38 @@ Command Cli::parse() {
 
       // reparse
       po::store(po::command_line_parser(opts).options(cat_desc).run(), vm_);
-    } catch (po::error& e) {
-      cerr << "Error: " << e.what() << endl;
+      return Cat_file{.type_ = vm_["type"].as<string>(),
+                      .object_ = vm_["object"].as<string>()};
+
+    } catch (...) {
       cerr << cat_desc << endl;
     }
 
-    return Cat_file{.type_ = vm_["type"].as<string>(),
-                    .object_ = vm_["object"].as<string>()};
-
   } else if (cmd == "checkout") {
   } else if (cmd == "commit") {
-  } else if (cmd == "hash-object") {
+  } else if (cmd == "hash-object") {  // hash-object
+    po::options_description hash_desc("hash-object description");
+    // clang-format off
+    hash_desc.add_options()
+        ("write,w", po::value<bool>()->default_value(false), "Actually write the object into the database.")
+        ("type,t", po::value<string>()->default_value("blob"), "Type of object.")
+        ("file,f",po::value<fs::path>()->required(), "Read object from file.")
+        ;
+    // clang-format on
+
+    try {
+      vector<string> opts =
+          po::collect_unrecognized(parsed.options, po::include_positional);
+      opts.erase(opts.begin());
+
+      // reparse
+      po::store(po::command_line_parser(opts).options(hash_desc).run(), vm_);
+      return Hash_object{.write_ = vm_["write"].as<bool>(),
+                         .type_ = vm_["type"].as<string>(),
+                         .path_ = vm_["file"].as<fs::path>()};
+    } catch (...) {
+      cerr << hash_desc << endl;
+    }
   } else if (cmd == "log") {
   } else if (cmd == "ls-tree") {
   } else if (cmd == "merge") {

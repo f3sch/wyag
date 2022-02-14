@@ -24,11 +24,16 @@ void on_cmd(const Command& cmd, GitRepository& repo) {
     auto init = get<Init>(cmd);
     repo.repo_create(init.path_);
   } else if (holds_alternative<Cat_file>(cmd)) {
+    repo.read_config();
     // cat-file
     auto cat = get<Cat_file>(cmd);
-    repo.read_config();
 
     repo.cat_file(cat.type_, cat.object_);
+  } else if (holds_alternative<Hash_object>(cmd)) {
+    repo.read_config();
+    // hash-object
+    auto hobj = get<Hash_object>(cmd);
+
   } else {
     cerr << "Unhandled command! (Write better code)" << endl;
     throw runtime_error("Undhandled command");
