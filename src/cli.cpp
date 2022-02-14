@@ -1,6 +1,7 @@
 #include "cli.hpp"
 
 #include <boost/program_options.hpp>
+#include <cstddef>
 #include <filesystem>
 #include <iostream>
 
@@ -9,6 +10,13 @@ namespace po = boost::program_options;
 using namespace std;
 
 Cli::Cli(const int argc, const char* argv[]) {
+  // Terminate if there is nothing to do
+  if (argc == 1) {
+    cout << "Please specify a command!" << endl;
+    print_help();
+    exit(EXIT_FAILURE);
+  }
+
   // Add list of options
   // clang-format off
   global_.add_options()
