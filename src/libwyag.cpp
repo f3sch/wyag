@@ -18,7 +18,8 @@ using namespace cli;
 using namespace repo;
 
 void on_cmd(const Command& cmd, GitRepository& repo) {
-  if (holds_alternative<Init>(cmd)) {
+  if (holds_alternative<monostate>(cmd)) {
+  } else if (holds_alternative<Init>(cmd)) {
     // create a repo
     auto init = get<Init>(cmd);
     repo.repo_create(init.path_);
