@@ -34,6 +34,7 @@ void on_cmd(const Command& cmd, GitRepository& repo) {
     // hash-object
     auto hobj = get<Hash_object>(cmd);
 
+    repo.hash_object(hobj.path_, hobj.type_, hobj.write_);
   } else {
     cerr << "Unhandled command! (Write better code)" << endl;
     throw runtime_error("Undhandled command");

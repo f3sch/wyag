@@ -8,9 +8,11 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <string>
 
 #include "config.hpp"
 #include "object.hpp"
+#include "util.hpp"
 
 namespace libwyag::repo {
 namespace fs = std::filesystem;
@@ -164,13 +166,16 @@ auto GitRepository::object_read(const string& hash) -> WyagObj {
 auto GitRepository::object_write(WyagObject& obj, const bool actually_write)
     -> string {
   // serialize data
-  auto data = obj.serialize();
+  string data = obj.serialize();
+
   // add header
-  string result = format("{} {} \x00 {}", obj.get_fmt(), data.length(), data);
+  string result = format("{} {} {} ", obj.get_fmt(), data.length(), "\x00");
+  result += data;
+
   // compute hash
   SHA1 hash;
   string digest;
-  StringSource ss(result, true, new HashFilter(hash, new StringSink(digest)));
+  StringSource(result, true, new HashFilter(hash, new StringSink(digest)));
 
   if (actually_write) {
     // compute path
@@ -191,6 +196,37 @@ auto GitRepository::object_find(const string& name, const string& fmt,
   return name;
 }
 
+auto GitRepository::object_hash(const fs::path& file, const string& fmt,
+                                const bool write) -> string {
+  string data;
+  try {
+    ifstream ifs(file, ios::in | ios::binary);
+    const size_t size = fs::file_size(file);
+    data.resize(size);
+    ifs.read(data.data(), size);
+    ifs.close();
+  } catch (...) {
+    cerr << format("Could not read this file: {}", file.string());
+  }
+
+  WyagObj obj;
+  if (fmt == "commit") {
+    obj = WyagCommit(data);
+    return object_write(get<WyagCommit>(obj), write);
+  } else if (fmt == "tree") {
+    obj = WyagTree(data);
+    return object_write(get<WyagTree>(obj), write);
+  } else if (fmt == "tag") {
+    obj = WyagTag(data);
+    return object_write(get<WyagTag>(obj), write);
+  } else if (fmt == "blob") {
+    obj = WyagBlob(data);
+    return object_write(get<WyagBlob>(obj), write);
+  }
+
+  throw runtime_error(format("Unknown type {}!", fmt));
+}
+
 void GitRepository::cat_file(const string& obj, const string& fmt) {
   auto obj_ = object_read(object_find(obj, fmt));
 
@@ -206,6 +242,16 @@ void GitRepository::cat_file(const string& obj, const string& fmt) {
 
   throw runtime_error(
       format("Unhandled variant ({}) in cat-file command!", fmt));
+}
+
+void GitRepository::hash_object(const string& file, const string& fmt,
+                                const bool write) {
+  if (!fs::exists(file)) {
+    throw runtime_error(format("File does not exist: {}!", file));
+  }
+
+  auto sha = object_hash(file, fmt, write);
+  cout << sha << endl;
 }
 
 auto repo_find(const fs::path& path, bool required) -> fs::path {

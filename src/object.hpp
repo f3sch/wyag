@@ -12,13 +12,6 @@ using namespace std;
 class WyagObject {
  public:
   /**
-   * Only constructor of an object.
-   *
-   * @param data Data to store.
-   */
-  WyagObject(const string& data = "");
-
-  /**
    * Deserialize data.
    *
    * @param data Data to deserialize.
@@ -37,10 +30,10 @@ class WyagObject {
    * Get format of object.
    * @return Format
    */
-  auto get_fmt() -> string const;
+  virtual auto get_fmt() -> string const = 0;
 
  private:
-  string fmt = 0; /* format */
+  string fmt_; /* format */
 };
 
 /**
@@ -66,6 +59,11 @@ class WyagBlob : public WyagObject {
    * Serialize data stored in blobdata.
    */
   auto serialize() -> string const override;
+
+  /**
+   * @return "blob"
+   */
+  virtual auto get_fmt() -> string const override;
 
  private:
   string blobdata;     /* blobdata */
@@ -96,6 +94,11 @@ class WyagTree : public WyagObject {
    */
   auto serialize() -> string const override;
 
+  /**
+   * @return "tree"
+   */
+  virtual auto get_fmt() -> string const override;
+
  private:
   string fmt = "tree"; /* format */
 };
@@ -123,6 +126,11 @@ class WyagTag : public WyagObject {
    * Serialize data stored in blobdata.
    */
   auto serialize() -> string const override;
+
+  /**
+   * @return "tag"
+   */
+  virtual auto get_fmt() -> string const override;
 
  private:
   string fmt = "tag"; /* format */
@@ -152,6 +160,11 @@ class WyagCommit : public WyagObject {
    */
   auto serialize() -> string const override;
 
+  /**
+   * @return "commit"
+   */
+  virtual auto get_fmt() -> string const override;
+
  private:
   string fmt = "commit"; /* format */
 };
@@ -159,6 +172,6 @@ class WyagCommit : public WyagObject {
 /**
  * Generic return type
  */
-typedef variant<WyagBlob, WyagCommit, WyagTag, WyagTree> WyagObj;
+typedef variant<monostate, WyagBlob, WyagCommit, WyagTag, WyagTree> WyagObj;
 
 }  // namespace libwyag::object

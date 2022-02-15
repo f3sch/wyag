@@ -126,12 +126,31 @@ class GitRepository {
                    const bool follow = true) -> string;
 
   /**
+   * Get the hash ID of a file.
+   *
+   * @param file File to get the hash from.
+   * @param fmt Format.
+   * @param write Perform write.
+   */
+  auto object_hash(const fs::path& file, const string& fmt,
+                   const bool write = false) -> string;
+
+  /**
    * Cat an object in the repo.
    *
    * @param obj Hash of object.
    * @param fmt Format of object.
    */
   void cat_file(const string& obj, const string& fmt = "");
+
+  /**
+   * Compute object ID and optionally creates a blob from a file.
+   * @param file File to get ID from.
+   * @param fmt Format of object.
+   * @param write Actually write the blob
+   */
+  void hash_object(const string& file, const string& fmt,
+                   const bool write = false);
 
  private:
   fs::path worktree_; /* Path to worktree. */

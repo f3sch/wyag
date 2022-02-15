@@ -5,10 +5,6 @@
 namespace libwyag::object {
 using namespace std;
 
-WyagObject::WyagObject(const string& data) {}
-
-auto WyagObject::get_fmt() -> string const { return fmt; }
-
 // Blobs
 WyagBlob::WyagBlob(const string& data) {
   if (!data.empty()) {
@@ -19,6 +15,8 @@ WyagBlob::WyagBlob(const string& data) {
 auto WyagBlob::serialize() -> string const { return blobdata; }
 
 void WyagBlob::deserialize(const string& data) { blobdata = data; }
+
+auto WyagBlob::get_fmt() -> string const { return fmt; }
 
 // Tree
 WyagTree::WyagTree(const string& data) {
@@ -31,6 +29,8 @@ auto WyagTree::serialize() -> string const { return string(); }
 
 void WyagTree::deserialize(const string& data) {}
 
+auto WyagTree::get_fmt() -> string const { return fmt; }
+
 // Tag
 WyagTag::WyagTag(const string& data) {
   if (!data.empty()) {
@@ -42,6 +42,8 @@ auto WyagTag::serialize() -> string const { return string(); }
 
 void WyagTag::deserialize(const string& data) {}
 
+auto WyagTag::get_fmt() -> string const { return fmt; }
+
 // Commit
 WyagCommit::WyagCommit(const string& data) {
   if (!data.empty()) {
@@ -52,5 +54,7 @@ WyagCommit::WyagCommit(const string& data) {
 auto WyagCommit::serialize() -> string const { return string(); }
 
 void WyagCommit::deserialize(const string& data) {}
+
+auto WyagCommit::get_fmt() -> string const { return fmt; }
 
 }  // namespace libwyag::object
